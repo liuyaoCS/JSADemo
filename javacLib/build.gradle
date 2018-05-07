@@ -1,0 +1,14 @@
+apply plugin: 'java-library'
+apply plugin: 'idea'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
+
+compileJava.dependsOn tasks.findByName('idea')
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
