@@ -10,19 +10,21 @@ import java.util.List;
 public class InputNew {
     int a = 1;
     @Deprecated
-    public List test_add_head(String s){
+    public List test_add_head(String s,int a){
         System.out.println("before  code");
         s+=":endl";
+        a=0;
 
         List<String> lists=new ArrayList<>();
-        lists.add(s);
+        lists.add(s+a);
         return lists;
     }
-    public int test_add_tail(){
+    public int test_add_tail(int a){
         a+=2;
         a*=2;
 
         System.out.println("after  code");
+        a=2018;
         System.out.println("a="+a);
         return a;
     }

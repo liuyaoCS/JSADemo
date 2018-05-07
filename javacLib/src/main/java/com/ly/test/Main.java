@@ -103,8 +103,58 @@ public class Main {
         for(int i=0;i<list1.size();i++){
             Type type = parseType(list1.get(i), list2.get(i));
             System.out.println("method1:"+list1.get(i).getName()+" method2:"+list2.get(i).getName()+" type:"+type);
+            invokeMethod(list1.get(i),list2.get(i),type);
         }
 
+    }
+
+    private static void invokeMethod(JCTree.JCMethodDecl method1, JCTree.JCMethodDecl method2, Type type) {
+        switch (type){
+            case PASS:
+            case REPLACE:
+                break;
+            case ADD_HEAD:
+                int pos = type.pos+1;
+                StringBuilder sb=new StringBuilder();
+
+                StringBuilder argsStr = new StringBuilder();
+                List<JCTree.JCVariableDecl> paras = method2.getParameters();
+                int parasSize = paras.size();
+                for(int i=0;i<parasSize;i++){
+                    String str = paras.get(i).vartype + " " + paras.get(i).name+" = ("+paras.get(i).vartype+")"+"args["+i+"];\n";
+                    argsStr.append(str);
+
+                }
+                sb.append(argsStr).append("\n");
+
+                for(int i=0; i < pos;i++){
+                    sb.append(method2.body.getStatements().get(i).toString());
+                    sb.append("\n");
+                }
+
+                sb.append("\nObject[] rets = new Object[args.length()];\n");
+                for(int i=0;i<parasSize;i++){
+                    sb.append("rets["+ i +"]="+paras.get(i).name +";\n");
+                }
+                sb.append("return rets;\n");
+
+                System.out.println("before:\n"+sb);
+                break;
+            case ADD_TAIL:
+                int p = type.pos-1;
+                int len  = method2.body.getStatements().size();
+                StringBuilder sts=new StringBuilder();
+
+
+                for(int i=p;i<len;i++){
+                    sts.append(method2.body.getStatements().get(i).toString());
+                    sts.append("\n");
+                }
+
+                System.out.println("after:\n"+sts);
+
+                break;
+        }
     }
 
     private static List<JCTree.JCMethodDecl> fetchMethods(JCTree.JCCompilationUnit unit) {
@@ -145,6 +195,7 @@ public class Main {
                     type= Type.PASS;
                 }else if(j<sts2.length()){
                     type= Type.ADD_TAIL;
+                    type.pos=j;
                 }
             }
             return type;
@@ -161,6 +212,7 @@ public class Main {
             if(m==-1){
                 if(n>-1){
                     type= Type.ADD_HEAD;
+                    type.pos=n;
                 }
             }
         }else if(m==sts1.length()-1){
@@ -174,7 +226,9 @@ public class Main {
         REPLACE,
         ADD_HEAD,
         ADD_TAIL,
-        PASS
+        PASS;
+
+        public int pos = -1;
     }
 
 }

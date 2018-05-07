@@ -10,12 +10,12 @@ import java.util.List;
 public class Input {
     int a = 1;
     @Deprecated
-    public List test_add_head(String s){
+    public List test_add_head(String s,int a){
         List<String> lists=new ArrayList<>();
-        lists.add(s);
+        lists.add(s+a);
         return lists;
     }
-    public int test_add_tail(){
+    public int test_add_tail(int a){
         a+=2;
         a*=2;
         return a;
