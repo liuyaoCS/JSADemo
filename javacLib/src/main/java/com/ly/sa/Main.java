@@ -1,7 +1,7 @@
-package com.ly.test;
+package com.ly.sa;
 
 import com.sun.source.tree.Tree;
-import com.sun.tools.javac.code.Symbol;
+
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
@@ -9,8 +9,6 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 
 import java.nio.charset.Charset;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.tools.JavaFileObject;
 
@@ -20,12 +18,16 @@ import javax.tools.JavaFileObject;
 
 public class Main {
     public static void main(String[] args){
-        String source = "F:\\as\\project\\JSADemo\\javacLib\\src\\main\\java\\com\\ly\\test\\Input.java";
-        String sourceNew = "F:\\as\\project\\JSADemo\\javacLib\\src\\main\\java\\com\\ly\\test\\InputNew.java";
+        String source = "F:\\as\\project\\JSADemo\\javacLib\\src\\main\\java\\com\\ly\\sa\\Input.java";
+        String sourceNew = "F:\\as\\project\\JSADemo\\javacLib\\src\\main\\java\\com\\ly\\sa\\InputNew.java";
 
         List<JCTree.JCCompilationUnit> trees = genASTWithSymbols(source,sourceNew);
 
-//        processAST_dependences(trees);
+
+        System.out.println("\n#########test method Input.test_replace##############");
+        processAST_dependences(trees);
+
+        System.out.println("\n##########test parse before after##############");
         processAST(trees);
     }
     private static List<JCTree.JCCompilationUnit> genASTWithSymbols(String filePath,String filePathNew) {
@@ -46,53 +48,28 @@ public class Main {
         return  trees;
     }
     private static void processAST_dependences(List<JCTree.JCCompilationUnit> trees){
-        Set<String> imports = new HashSet<>();
-        Set<String> requiredImports = new HashSet<>();
 
+        MethodDependenceVisitor mv = new MethodDependenceVisitor();
         JCTree.JCCompilationUnit unit = trees.get(0);
+
         List<JCTree> jtrees=unit.defs;
         for(JCTree jcTree:jtrees){
             if(jcTree instanceof JCTree.JCClassDecl){
                 JCTree.JCClassDecl tmp = (JCTree.JCClassDecl) jcTree;
                 List<JCTree> classTrees = tmp.defs;
                 for(JCTree item:classTrees){
-                    if(item instanceof JCTree.JCMethodDecl){
-                        JCTree.JCMethodDecl methodTree = (JCTree.JCMethodDecl) item;
-
-                        List<JCTree.JCAnnotation> annotations = methodTree.mods.annotations;
-                        for(JCTree.JCAnnotation annotation:annotations){
-                            System.out.println("annotation type="+annotation);
-                        }
-
-                        List<JCTree.JCStatement> stats = methodTree.body.stats;
-                        for(JCTree.JCStatement jcStatement:stats){
-                            if(jcStatement instanceof JCTree.JCVariableDecl){
-                                Symbol.TypeSymbol dts = ((JCTree.JCVariableDecl) jcStatement).vartype.type.tsym;
-                                System.out.println("dec type="+dts.toString());
-                                if(imports.contains(dts.toString())){
-                                    requiredImports.add(dts.toString());
-                                }
-
-                                Symbol.TypeSymbol ts = ((JCTree.JCVariableDecl) jcStatement).init.type.tsym;
-                                System.out.println("init type="+ts.toString());
-                                if(imports.contains(ts.toString())){
-                                    requiredImports.add(ts.toString());
-                                }
-                            }
-                        }
-                        //just test visit method
-                        item.accept(new MethodVisitor(),null);
+                    if(item instanceof JCTree.JCMethodDecl
+                            && ((JCTree.JCMethodDecl) item).getName().toString().equals("test_replace")){
+                        item.accept(mv,null);
                     }
                 }
-            }else if(jcTree instanceof JCTree.JCImport){
-                JCTree.JCImport tmp = (JCTree.JCImport) jcTree;
-                imports.add(tmp.qualid.toString());
             }
         }
 
-        for(String importItem:requiredImports){
-            System.out.println("required import :"+importItem);
+        for(String str:mv.getRequireImports()){
+            System.out.println("possible import:"+str);
         }
+
     }
     private static void processAST(List<JCTree.JCCompilationUnit> trees){
 

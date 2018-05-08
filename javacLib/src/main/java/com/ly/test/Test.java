@@ -1,5 +1,8 @@
 package com.ly.test;
 
+import com.ly.sa.Input;
+import com.ly.sa.Input.*;
+
 import java.util.regex.Pattern;
 
 /**
@@ -12,5 +15,9 @@ public class Test {
         String reg = "\\{[a-z]+\\}";
         boolean ret = Pattern.compile(reg).matcher(str).matches();
         System.out.println("ret="+ret);
+
+        Input i = new Input();
+        Person pp = i.new Person("ee");
+        System.out.println("name = "+pp.getName());
     }
 }
