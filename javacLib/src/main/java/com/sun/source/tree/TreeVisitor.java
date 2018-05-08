@@ -66,6 +66,7 @@ public interface TreeVisitor<R,P> {
     R visitCompoundAssignment(CompoundAssignmentTree node, P p);
     R visitBinary(BinaryTree node, P p);
     R visitBlock(BlockTree node, P p);
+    R visitBlock(BlockTree node, int i , P p);
     R visitBreak(BreakTree node, P p);
     R visitCase(CaseTree node, P p);
     R visitCatch(CatchTree node, P p);

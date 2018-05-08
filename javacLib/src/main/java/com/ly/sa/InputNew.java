@@ -24,9 +24,10 @@ public class InputNew {
         a*=2;
 
         System.out.println("after  code");
-        a=2018;
-        System.out.println("a="+a);
-        return a;
+        int b=111;
+        //a=b;
+        System.out.println("a="+b);
+        return b;
     }
     public String test_replace(){
         String s1="hi";

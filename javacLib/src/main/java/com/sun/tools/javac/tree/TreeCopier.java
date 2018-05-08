@@ -127,6 +127,11 @@ public class TreeCopier<P> implements TreeVisitor<JCTree,P> {
         return M.at(t.pos).Block(t.flags, stats);
     }
 
+    @Override
+    public JCTree visitBlock(BlockTree node, int i, P p) {
+        return null;
+    }
+
     public JCTree visitBreak(BreakTree node, P p) {
         JCBreak t = (JCBreak) node;
         return M.at(t.pos).Break(t.label);

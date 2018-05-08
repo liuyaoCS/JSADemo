@@ -9,6 +9,8 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 
 import java.nio.charset.Charset;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.tools.JavaFileObject;
 
@@ -49,7 +51,7 @@ public class Main {
     }
     private static void processAST_dependences(List<JCTree.JCCompilationUnit> trees){
 
-        MethodDependenceVisitor mv = new MethodDependenceVisitor();
+        MethodVisitor mv = new MethodVisitor();
         JCTree.JCCompilationUnit unit = trees.get(0);
 
         List<JCTree> jtrees=unit.defs;
@@ -119,16 +121,31 @@ public class Main {
                 break;
             case ADD_TAIL:
                 int p = type.pos-1;
-                int len  = method2.body.getStatements().size();
+                List<JCTree.JCStatement> stats=method2.getBody().getStatements();
                 StringBuilder sts=new StringBuilder();
 
+                Set<String> vars1 = new HashSet<>();
+                MethodVisitor methodVisitor = new MethodVisitor();
+                method1.accept(methodVisitor,null);
+                vars1.addAll(methodVisitor.getVars());
 
-                for(int i=p;i<len;i++){
-                    sts.append(method2.body.getStatements().get(i).toString());
-                    sts.append("\n");
+                Set<String> vars2 = new HashSet<>();
+                BlockVisitor blockVisitor =new BlockVisitor();
+                method2.body.accept(blockVisitor,p,null);
+                vars2.addAll(blockVisitor.getVars());
+
+                Set<String> vars = new HashSet<>();
+                vars.addAll(vars1);
+                vars.retainAll(vars2);
+                if(vars.size()!=0){
+                    System.out.println("can not process now!");
+                    break;
+                }else{
+                    for(int i=p;i<stats.size();i++){
+                        sts.append(stats.get(i)+"\n");
+                    }
+                    System.out.println("after:\n"+sts);
                 }
-
-                System.out.println("after:\n"+sts);
 
                 break;
         }
