@@ -1,5 +1,9 @@
 package com.ly.sa;
 
+import com.ly.sa.utils.KMP;
+import com.ly.sa.visitor.BlockVisitor;
+import com.ly.sa.visitor.MethodVisitor;
+import com.ly.sa.visitor.ReturnVisitor;
 import com.sun.source.tree.Tree;
 
 import com.sun.tools.javac.file.JavacFileManager;
@@ -9,10 +13,9 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 
 import java.nio.charset.Charset;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.tools.JavaFileObject;
+
+import static com.ly.sa.utils.ASTUtils.*;
 
 /**
  * Created by liuyao-s on 2018/4/23.
@@ -20,8 +23,8 @@ import javax.tools.JavaFileObject;
 
 public class Main {
     public static void main(String[] args){
-        String source = "F:\\as\\project\\JSADemo\\javacLib\\src\\main\\java\\com\\ly\\sa\\Input.java";
-        String sourceNew = "F:\\as\\project\\JSADemo\\javacLib\\src\\main\\java\\com\\ly\\sa\\InputNew.java";
+        String source = "F:\\as\\project\\JSADemo\\javacLib\\src\\main\\java\\com\\ly\\test\\input\\Input.java";
+        String sourceNew = "F:\\as\\project\\JSADemo\\javacLib\\src\\main\\java\\com\\ly\\test\\input\\InputNew.java";
 
         List<JCTree.JCCompilationUnit> trees = genASTWithSymbols(source,sourceNew);
 
@@ -30,7 +33,7 @@ public class Main {
         processAST_dependences(trees);
 
         System.out.println("\n##########test parse before after##############");
-        processAST(trees);
+        processAST_method(trees);
     }
     private static List<JCTree.JCCompilationUnit> genASTWithSymbols(String filePath,String filePathNew) {
         Context context = new Context();
@@ -73,156 +76,142 @@ public class Main {
         }
 
     }
-    private static void processAST(List<JCTree.JCCompilationUnit> trees){
+    private static void processAST_method(List<JCTree.JCCompilationUnit> trees){
 
         List<JCTree.JCMethodDecl> list1 = fetchMethods(trees.get(0));
         List<JCTree.JCMethodDecl> list2 = fetchMethods(trees.get(1));
 
         //real process suppose only method modify and list1.size()==list2.size()
         for(int i=0;i<list1.size();i++){
-            Type type = parseType(list1.get(i), list2.get(i));
-            System.out.println("method1:"+list1.get(i).getName()+" method2:"+list2.get(i).getName()+" type:"+type);
-            invokeMethod(list1.get(i),list2.get(i),type);
-        }
+            JCTree.JCMethodDecl method1 = list1.get(i);
+            JCTree.JCMethodDecl method2 = list2.get(i);
+            Type type =Type.REPLACE;
 
-    }
+            if(method1.toString().equals(method2.toString())){
+                //[type pass]
+                System.out.println("\n[pass]: "+method1.name);
+                type = Type.PASS;
+                continue;
+            }
 
-    private static void invokeMethod(JCTree.JCMethodDecl method1, JCTree.JCMethodDecl method2, Type type) {
-        switch (type){
-            case PASS:
-            case REPLACE:
-                break;
-            case ADD_HEAD:
-                int pos = type.pos+1;
-                StringBuilder sb=new StringBuilder();
+            int pos = KMP.find(method2.body.stats,method1.body.stats);
+            if(pos == -1){
+                //[type replace]
+                System.out.println("\n[replace]: "+method1.name);
+                type =Type.REPLACE;
+                continue;
+            }
 
+
+            //add before
+            StringBuilder before = new StringBuilder();
+            if(pos>0){
                 StringBuilder argsStr = new StringBuilder();
                 List<JCTree.JCVariableDecl> paras = method2.getParameters();
                 int parasSize = paras.size();
-                for(int i=0;i<parasSize;i++){
-                    String str = paras.get(i).vartype + " " + paras.get(i).name+" = ("+paras.get(i).vartype+")"+"args["+i+"];\n";
+                for(int j=0;j<parasSize;j++){
+                    String str = paras.get(j).vartype + " " + paras.get(j).name+" = ("+paras.get(j).vartype+")"+"args["+j+"];\n";
                     argsStr.append(str);
 
                 }
-                sb.append(argsStr).append("\n");
+                before.append(argsStr).append("\n");
 
-                for(int i=0; i < pos;i++){
-                    sb.append(method2.body.getStatements().get(i).toString());
-                    sb.append("\n");
+                for(int m=0;m<pos;m++){
+                    String expression  = method2.body.stats.get(m).toString();
+                    if(!expression.endsWith(";")){
+                        expression=expression+";";
+                    }
+                    before.append(expression).append("\n");
                 }
 
-                sb.append("\nObject[] rets = new Object[args.length()];\n");
-                for(int i=0;i<parasSize;i++){
-                    sb.append("rets["+ i +"]="+paras.get(i).name +";\n");
+                before.append("\nObject[] rets = new Object[args.length()];\n");
+                for(int k=0;k<parasSize;k++){
+                    before.append("rets["+ k +"]="+paras.get(k).name +";\n");
                 }
-                sb.append("return rets;\n");
+                before.append("return rets;\n");
 
-                System.out.println("before:\n"+sb);
-                break;
-            case ADD_TAIL:
-                int p = type.pos-1;
-                List<JCTree.JCStatement> stats=method2.getBody().getStatements();
-                StringBuilder sts=new StringBuilder();
+                type = Type.ADD_HEAD;
+            }
 
-                Set<String> vars1 = new HashSet<>();
+            //add after
+            StringBuilder after = new StringBuilder();
+            JCTree.JCStatement lastStat1 = method1.body.stats.last();
+            JCTree.JCStatement lastStat2 = method2.body.stats.last();
+            int start = pos+method1.body.stats.size();
+            int end = method2.body.stats.size();
+            if(lastStat1.getKind().equals(Tree.Kind.RETURN)){
+                start --;
+            }
+            if(lastStat2.getKind().equals(Tree.Kind.RETURN)){
+                end --;
+            }
+            if(start<end){
                 MethodVisitor methodVisitor = new MethodVisitor();
                 method1.accept(methodVisitor,null);
-                vars1.addAll(methodVisitor.getVars());
 
-                Set<String> vars2 = new HashSet<>();
                 BlockVisitor blockVisitor =new BlockVisitor();
-                method2.body.accept(blockVisitor,p,null);
-                vars2.addAll(blockVisitor.getVars());
+                method2.body.accept(blockVisitor,start,end-1,null);
 
-                Set<String> vars = new HashSet<>();
-                vars.addAll(vars1);
-                vars.retainAll(vars2);
-                if(vars.size()!=0){
-                    System.out.println("can not process now!");
-                    break;
+                if(!canAddAfter(methodVisitor,blockVisitor)){
+                    System.out.println("\n[replace]: "+method1.name);
+                    continue;
+                }
+
+                for(int n=start;n<end;n++){
+                    String expression  = method2.body.stats.get(n).toString();
+                    if(!expression.endsWith(";")){
+                        expression=expression+";";
+                    }
+                    after.append(expression).append("\n");
+                }
+
+                if(type == Type.ADD_HEAD){
+                    type = Type.ADD_BOTH;
                 }else{
-                    for(int i=p;i<stats.size();i++){
-                        sts.append(stats.get(i)+"\n");
-                    }
-                    System.out.println("after:\n"+sts);
+                    type = Type.ADD_TAIL;
                 }
+            }
 
-                break;
-        }
-    }
+            //check return : must be one of add_head add_tail add_both
+            ReturnVisitor returnVisitor1 = new ReturnVisitor();
+            lastStat1.accept(returnVisitor1,null);
+            List<JCTree.JCMethodInvocation> jcMethodInvocations1 = returnVisitor1.getJcMethodInvocations();
+            ReturnVisitor returnVisitor2 = new ReturnVisitor();
+            lastStat2.accept(returnVisitor2,null);
+            List<JCTree.JCMethodInvocation> jcMethodInvocations2 = returnVisitor2.getJcMethodInvocations();
 
-    private static List<JCTree.JCMethodDecl> fetchMethods(JCTree.JCCompilationUnit unit) {
-        List<JCTree.JCMethodDecl> list= List.nil();
-
-        List<JCTree> jtrees=unit.defs;
-        for(JCTree jcTree:jtrees){
-            if(jcTree instanceof JCTree.JCClassDecl){
-                JCTree.JCClassDecl tmp = (JCTree.JCClassDecl) jcTree;
-                List<JCTree> classTrees = tmp.defs;
-                for(JCTree item:classTrees){
-                    if(item instanceof JCTree.JCMethodDecl){
-                        JCTree.JCMethodDecl methodTree = (JCTree.JCMethodDecl) item;
-                        list=list.append(methodTree);
+            if(lastStat1.getKind().equals(Tree.Kind.RETURN)){
+                if(jcMethodInvocations1.size()>0){
+                    if(!(type == Type.ADD_HEAD && jcMethodInvocations1==jcMethodInvocations2)) {
+                        System.out.println("replace "+method1.name);
+                        continue;
                     }
                 }
             }
-        }
-        return list;
-    }
-
-    private static Type parseType(JCTree.JCMethodDecl methodDecl1, JCTree.JCMethodDecl methodDecl2) {
-        Type type =Type.REPLACE;
-
-        List<JCTree.JCStatement> sts1 = methodDecl1.body.stats;
-        List<JCTree.JCStatement> sts2 = methodDecl2.body.stats;
-
-        int j=0;
-        while(sts2.get(j).toString().equals(sts1.get(j).toString())
-                || sts1.get(j).getKind().equals(Tree.Kind.RETURN)
-                || sts2.get(j).getKind().equals(Tree.Kind.RETURN)){
-            j++;
-            if(j==sts1.length() || j==sts2.length())break;
-        }
-        if(j>0){
-            if(j==sts1.length()){
-                if(j==sts2.length()){
-                    type= Type.PASS;
-                }else if(j<sts2.length()){
-                    type= Type.ADD_TAIL;
-                    type.pos=j;
-                }
+            if(lastStat2.getKind().equals(Tree.Kind.RETURN)){
+                after.append(lastStat2);
             }
-            return type;
-        }
 
-        int m=sts1.length()-1,n=sts2.length()-1;
-        while(sts2.get(n).toString().equals(sts1.get(m).toString())
-                || sts1.get(n).getKind().equals(Tree.Kind.RETURN)){
-            m--;
-            n--;
-            if(m==-1 || n==-1)break;
-        }
-        if(m<sts1.length()-1) {
-            if(m==-1){
-                if(n>-1){
-                    type= Type.ADD_HEAD;
-                    type.pos=n;
-                }
+            //invoke method
+            switch (type){
+                case ADD_HEAD:
+                    System.out.println("\n[add_head]:"+method1.name);
+                    System.out.println("before:\n"+before);
+                    break;
+                case ADD_TAIL:
+                    System.out.println("\n[add_tail]:"+method1.name);
+                    System.out.println("after:\n"+after);
+                    break;
+                case ADD_BOTH:
+                    System.out.println("\n[add_both]:"+method1.name);
+                    System.out.println("before:\n"+before);
+                    System.out.println("after:\n"+after);
+                    break;
+                default:
+                    System.out.println("\n[type err]");
+                    break;
             }
-        }else if(m==sts1.length()-1){
-            type= Type.REPLACE;
         }
-
-        return type;
-    }
-
-    private enum Type{
-        REPLACE,
-        ADD_HEAD,
-        ADD_TAIL,
-        PASS;
-
-        public int pos = -1;
     }
 
 }

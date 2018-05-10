@@ -919,6 +919,9 @@ public abstract class JCTree implements Tree, Cloneable, DiagnosticPosition {
         public <R,D> R accept(TreeVisitor<R,D> v, int i,D d) {
             return v.visitBlock(this,i, d);
         }
+        public <R,D> R accept(TreeVisitor<R,D> v, int i,int j, D d) {
+            return v.visitBlock(this,i,j, d);
+        }
 
         @Override
         public Tag getTag() {

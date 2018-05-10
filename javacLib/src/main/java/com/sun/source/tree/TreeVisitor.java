@@ -67,6 +67,7 @@ public interface TreeVisitor<R,P> {
     R visitBinary(BinaryTree node, P p);
     R visitBlock(BlockTree node, P p);
     R visitBlock(BlockTree node, int i , P p);
+    R visitBlock(BlockTree node, int i , int j, P p);
     R visitBreak(BreakTree node, P p);
     R visitCase(CaseTree node, P p);
     R visitCatch(CatchTree node, P p);

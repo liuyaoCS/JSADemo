@@ -1,4 +1,4 @@
-package com.ly.sa;
+package com.ly.test.input;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +14,7 @@ public class InputNew {
         System.out.println("before  code");
         s+=":endl";
         a=0;
+        int b =a;
 
         List<String> lists=new ArrayList<>();
         lists.add(s+a);
@@ -25,12 +26,18 @@ public class InputNew {
 
         System.out.println("after  code");
         int b=111;
-        //a=b;
-        System.out.println("a="+b);
+//        a=b;
+//        System.out.println("a="+a);
         return b;
     }
+    private int test_add_both(int a){
+        System.out.println("1");
+        a+=2;
+        System.out.println("2");
+        return a;
+    }
     public String test_replace(){
-        String s1="hi";
+        String s1 = "hi";
         System.out.println("s="+s1+"end");
         return s1;
     }

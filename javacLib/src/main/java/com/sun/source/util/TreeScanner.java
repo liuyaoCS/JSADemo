@@ -98,6 +98,27 @@ public class TreeScanner<R,P> implements TreeVisitor<R,P> {
         }
         return r;
     }
+    public R scan(Iterable<? extends Tree> nodes, int begin,int last, P p) {
+        R r = null;
+        if (nodes != null) {
+            boolean first = true;
+            int i=0;
+            for (Tree node : nodes) {
+                if(i<begin){
+                    continue;
+                }
+                if(i>last){
+                    break;
+                }
+                r = (first ? scan(node, p) : scanAndReduce(node, p, r));
+                first = false;
+
+                i++;
+            }
+        }
+        return r;
+    }
+
     /** Scan a list of nodes.
      */
     public R scan(Iterable<? extends Tree> nodes, P p) {
@@ -182,6 +203,9 @@ public class TreeScanner<R,P> implements TreeVisitor<R,P> {
     //add by liuyao
     public R visitBlock(BlockTree node,int i, P p) {
         return scan(node.getStatements(),i, p);
+    }
+    public R visitBlock(BlockTree node,int i,int j, P p) {
+        return scan(node.getStatements(),i,j, p);
     }
 
     public R visitDoWhileLoop(DoWhileLoopTree node, P p) {

@@ -1,4 +1,4 @@
-package com.ly.sa;
+package com.ly.test.input;
 
 import com.ly.test.Single;
 
@@ -12,7 +12,7 @@ import java.util.List;
  */
 
 public class Input {
-    int a = 1;
+    public int a = 1;
     public class Person{
         String name;
         public Person(String s){
@@ -34,6 +34,10 @@ public class Input {
     private int test_add_tail(int a){
         a+=2;
         a*=2;
+        return a;
+    }
+    private int test_add_both(int a){
+        a+=2;
         return a;
     }
     public String test_replace(HashSet set,int b) throws Exception {

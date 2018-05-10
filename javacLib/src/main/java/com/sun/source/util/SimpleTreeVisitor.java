@@ -93,6 +93,11 @@ public class SimpleTreeVisitor <R,P> implements TreeVisitor<R,P> {
     public R visitBlock(BlockTree node, int i, P p) {
         return null;
     }
+    @Override
+    public R visitBlock(BlockTree node, int i, int j, P p) {
+        return null;
+    }
+
 
     public R visitDoWhileLoop(DoWhileLoopTree node, P p) {
         return defaultAction(node, p);
