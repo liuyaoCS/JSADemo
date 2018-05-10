@@ -187,12 +187,11 @@ public class Main {
             lastStat2.accept(returnVisitor2,null);
             List<JCTree.JCMethodInvocation> jcMethodInvocations2 = returnVisitor2.getJcMethodInvocations();
 
-            if(lastStat1.getKind().equals(Tree.Kind.RETURN)){
-                if(jcMethodInvocations1.size()>0){
-                    if(!(type == Type.ADD_HEAD && jcMethodInvocations1==jcMethodInvocations2)) {
-                        System.out.println("\n[replace]: "+method1.name);
-                        continue;
-                    }
+            if(lastStat1.getKind().equals(Tree.Kind.RETURN) && jcMethodInvocations1.size()>0){
+                if(!lastStat2.getKind().equals(Tree.Kind.RETURN) ||
+                        !(type == Type.ADD_HEAD && jcMethodInvocations1==jcMethodInvocations2)) {
+                    System.out.println("\n[replace]: "+method1.name);
+                    continue;
                 }
             }
             if(lastStat2.getKind().equals(Tree.Kind.RETURN)){
