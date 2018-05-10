@@ -93,6 +93,13 @@ public class Main {
                 type = Type.PASS;
                 continue;
             }
+            if(method1.body.stats.size()==0 ||
+                    (method1.body.stats.size()==1 && method1.body.stats.get(0).getKind().equals(Tree.Kind.RETURN))){
+                //[type replace]
+                System.out.println("\n[replace]: "+method1.name);
+                type =Type.REPLACE;
+                continue;
+            }
 
             int pos = KMP.find(method2.body.stats,method1.body.stats);
             if(pos == -1){
@@ -183,7 +190,7 @@ public class Main {
             if(lastStat1.getKind().equals(Tree.Kind.RETURN)){
                 if(jcMethodInvocations1.size()>0){
                     if(!(type == Type.ADD_HEAD && jcMethodInvocations1==jcMethodInvocations2)) {
-                        System.out.println("replace "+method1.name);
+                        System.out.println("\n[replace]: "+method1.name);
                         continue;
                     }
                 }

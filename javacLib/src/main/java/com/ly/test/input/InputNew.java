@@ -41,5 +41,8 @@ public class InputNew {
         System.out.println("s="+s1+"end");
         return s1;
     }
+    public int test_other(){
+        return 2;
+    }
 }
 

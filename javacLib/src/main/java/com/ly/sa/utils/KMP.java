@@ -44,6 +44,12 @@ public class KMP {
         if(p.get(p.size()-1).getKind().equals(Tree.Kind.RETURN)){
             pT = p.subList(0,p.size()-1);
         }
+        if(pT!=null && pT.size() ==0){
+            return 0;
+        }
+        if(sT!=null && sT.size() == 0){
+            return -1;
+        }
         return findInner(sT!=null?sT:s,pT!=null?pT:p);
     }
 

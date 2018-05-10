@@ -58,6 +58,9 @@ public class Input {
 
         return s;
     }
+    public int test_other(){
+        return 1;
+    }
 
 }
 
