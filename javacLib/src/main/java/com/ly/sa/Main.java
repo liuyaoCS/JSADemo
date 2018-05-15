@@ -23,8 +23,8 @@ import static com.ly.sa.utils.ASTUtils.*;
 
 public class Main {
     public static void main(String[] args){
-        String source = "F:\\as\\project\\JSADemo\\javacLib\\src\\main\\java\\com\\ly\\test\\input\\Input.java";
-        String sourceNew = "F:\\as\\project\\JSADemo\\javacLib\\src\\main\\java\\com\\ly\\test\\input\\InputNew.java";
+        String source = "F:\\as\\project\\JSADemo\\javacLib\\src\\main\\java\\com\\ly\\sa\\input\\Input.java";
+        String sourceNew = "F:\\as\\project\\JSADemo\\javacLib\\src\\main\\java\\com\\ly\\sa\\input\\InputNew.java";
 
         List<JCTree.JCCompilationUnit> trees = genASTWithSymbols(source,sourceNew);
 

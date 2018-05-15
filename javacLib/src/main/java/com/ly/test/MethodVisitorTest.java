@@ -25,7 +25,7 @@ public class MethodVisitorTest extends TreeScanner {
     //=
     @Override
     public Object visitAssignment(AssignmentTree node, Object o) {
-//        System.out.println("visitAssignment:"+node.toString());
+        System.out.println("visitAssignment:"+node.toString());
         return super.visitAssignment(node, o);
     }
     //+=

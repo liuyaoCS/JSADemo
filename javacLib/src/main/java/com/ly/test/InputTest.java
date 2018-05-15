@@ -8,6 +8,9 @@ import java.util.HashSet;
 
 public class InputTest {
     String name="";
+    public void setName(String n){
+        name = n;
+    }
     public String test_method(HashSet set, int b) throws Exception {
 
         int a = 0;
@@ -15,9 +18,21 @@ public class InputTest {
 
         InputTest test = new InputTest();
         test.name = "ss";
+        setName("ly");
 
         Single.getInstance().say();
 
+        InnerInput innerInput = test.new InnerInput();
+        innerInput.pubsay();
+
         return "";
+    }
+    class InnerInput{
+        public void pubsay(){
+            System.out.println("pubsay");
+        }
+        private void prisay(){
+            System.out.println("prisay");
+        }
     }
 }

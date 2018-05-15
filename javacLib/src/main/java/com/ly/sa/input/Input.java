@@ -1,4 +1,4 @@
-package com.ly.test.input;
+package com.ly.sa.input;
 
 import com.ly.test.Single;
 
