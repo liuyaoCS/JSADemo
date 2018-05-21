@@ -8,9 +8,7 @@ import java.util.HashSet;
 
 public class InputTest {
     String name="";
-    public void setName(String n){
-        name = n;
-    }
+
     public String test_method(HashSet set, int b) throws Exception {
 
         int a = 0;
@@ -25,7 +23,32 @@ public class InputTest {
         InnerInput innerInput = test.new InnerInput();
         innerInput.pubsay();
 
+        new InnerInput(){
+            @Override
+            public void pubsay() {
+                System.out.println(" anonymous pub say");
+            }
+        }.pubsay();
+
+        InnerInput ip = new InnerInput(){
+            @Override
+            public void pubsay() {
+                super.pubsay();
+            }
+        };
+        ip.pubsay();
+
+        class LocalInner{
+            String li;
+            void lim(){
+
+            }
+        }
+
         return "";
+    }
+    public void setName(String n){
+        name = n;
     }
     class InnerInput{
         public void pubsay(){

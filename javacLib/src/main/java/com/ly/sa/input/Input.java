@@ -3,8 +3,10 @@ package com.ly.sa.input;
 import com.ly.test.Single;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -13,6 +15,7 @@ import java.util.List;
 
 public class Input {
     public int a = 1;
+    Map map =null;
     public class Person{
         String name;
         public Person(String s){
@@ -55,7 +58,7 @@ public class Input {
         Integer i;
 
         Single.getInstance().say();
-
+        map=null;
         return s;
     }
     public int test_other(){

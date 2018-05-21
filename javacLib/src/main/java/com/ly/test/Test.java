@@ -15,7 +15,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-
+import static java.lang.System.out;
 import javax.tools.JavaFileObject;
 
 /**
@@ -25,8 +25,8 @@ import javax.tools.JavaFileObject;
 public class Test {
     public static void main(String[] args)  {
 
-        testAST();
-        testInner();
+//        testAST();
+//        testInner();
         test();
     }
     static String className = "com.ly.test.A$AA";
@@ -36,7 +36,7 @@ public class Test {
         String ret = pkg.replaceAll("\\.", "\\\\");
         System.out.println("ret = "+ret);
 
-        System.out.println("############");
+        out.println("############");
         A a = new A();
         A.AA aa = a.new AA();
 
@@ -48,6 +48,25 @@ public class Test {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        Object o = new int[2];//Object or = new int[2]; wrong int[] is not object array
+        Object[] ar = new String[2];
+
+        out.println(new ArrayList<String>(){
+            @Override
+            public String toString() {
+                return get(0)+get(1);
+            }
+            {
+                add("haha");
+                add("biubiu");
+            }
+        }.toString());
+
+        Class cc = new Test(){}.getClass().getEnclosingClass();
+        System.out.println(cc.getCanonicalName());
+
+
 
     }
 
@@ -101,8 +120,6 @@ public class Test {
         Inner inner  = test.new Inner();
         inner.speak();
 
-        Inner.Inner1 inner1 =inner.new Inner1();
-
 
         try {
             //1 newInstance(test)
@@ -147,6 +164,25 @@ public class Test {
             Field aF = aaC.getDeclaredField("this$0");
             Object aO = aF.get(aaO);
             System.out.println("aO: "+(aO instanceof A)) ;
+
+            //5 static inner
+            Class saaC = Class.forName("com.ly.test.A$SAA");
+            Object saaO = saaC.newInstance();
+
+            Method msaa = saaC.getDeclaredMethod("msaa");
+            msaa.setAccessible(true);
+            msaa.invoke(saaO);
+
+            //anonymous inner
+            Class c1 = Class.forName("com.ly.test.A$1");
+            Constructor con1 = c1.getDeclaredConstructor(new Class[]{A.class});
+            Object o1  =con1.newInstance(a);
+            Method m1 = c1.getDeclaredMethod("maa");
+            m1.invoke(o1);
+
+
+            //local inner class
+            a.ma();
 
 
         } catch (Exception e) {
