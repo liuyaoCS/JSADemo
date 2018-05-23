@@ -1,5 +1,8 @@
 package com.ly.sa;
 
+import com.ly.api.ASTApi;
+import com.ly.api.ParseResult;
+import com.ly.sa.utils.ASTUtils;
 import com.ly.sa.utils.KMP;
 import com.ly.sa.visitor.BlockVisitor;
 import com.ly.sa.visitor.MethodVisitor;
@@ -33,7 +36,7 @@ public class Main {
         processAST_dependences(trees);
 
         System.out.println("\n##########test parse before after##############");
-        processAST_method(trees);
+        processAST_method2(trees);
     }
     private static List<JCTree.JCCompilationUnit> genASTWithSymbols(String filePath,String filePathNew) {
         Context context = new Context();
@@ -76,6 +79,22 @@ public class Main {
         }
 
     }
+    private static void processAST_method2(List<JCTree.JCCompilationUnit> trees){
+
+        ParseResult parseResult;
+        List<JCTree.JCMethodDecl> list1 = fetchMethods(trees.get(0));
+        List<JCTree.JCMethodDecl> list2 = fetchMethods(trees.get(1));
+
+        //real process suppose only method modify and list1.size()==list2.size()
+        for(int i=0;i<list1.size();i++){
+            JCTree.JCMethodDecl method1 = list1.get(i);
+            JCTree.JCMethodDecl method2 = list2.get(i);
+            parseResult = ASTApi.parseMethod(method1, method2);
+            System.out.println("type:"+parseResult.type+" before:"+parseResult.before+" after:"+parseResult.after);
+
+        }
+    }
+
     private static void processAST_method(List<JCTree.JCCompilationUnit> trees){
 
         List<JCTree.JCMethodDecl> list1 = fetchMethods(trees.get(0));

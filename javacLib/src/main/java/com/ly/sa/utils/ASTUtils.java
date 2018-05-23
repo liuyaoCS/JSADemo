@@ -20,9 +20,6 @@ public class ASTUtils {
         ADD_TAIL,
         ADD_BOTH,
         PASS;
-
-        @Deprecated
-        public int pos = -1;
     }
 
     public static boolean canAddAfter(MethodVisitor methodVisitor, BlockVisitor blockVisitor){
@@ -70,50 +67,4 @@ public class ASTUtils {
         return list;
     }
 
-    @Deprecated
-    public static Type parseType(JCTree.JCMethodDecl methodDecl1, JCTree.JCMethodDecl methodDecl2) {
-        Type type = Type.REPLACE;
-
-        List<JCTree.JCStatement> sts1 = methodDecl1.body.stats;
-        List<JCTree.JCStatement> sts2 = methodDecl2.body.stats;
-
-        int j=0;
-        while(sts2.get(j).toString().equals(sts1.get(j).toString())
-                || sts1.get(j).getKind().equals(Tree.Kind.RETURN)
-                || sts2.get(j).getKind().equals(Tree.Kind.RETURN)){
-            j++;
-            if(j==sts1.length() || j==sts2.length())break;
-        }
-        if(j>0){
-            if(j==sts1.length()){
-                if(j==sts2.length()){
-                    type= Type.PASS;
-                }else if(j<sts2.length()){
-                    type= Type.ADD_TAIL;
-                    type.pos=j;
-                }
-            }
-            return type;
-        }
-
-        int m=sts1.length()-1,n=sts2.length()-1;
-        while(sts2.get(n).toString().equals(sts1.get(m).toString())
-                || sts1.get(n).getKind().equals(Tree.Kind.RETURN)){
-            m--;
-            n--;
-            if(m==-1 || n==-1)break;
-        }
-        if(m<sts1.length()-1) {
-            if(m==-1){
-                if(n>-1){
-                    type= Type.ADD_HEAD;
-                    type.pos=n;
-                }
-            }
-        }else if(m==sts1.length()-1){
-            type= Type.REPLACE;
-        }
-
-        return type;
-    }
 }
